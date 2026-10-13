@@ -1,0 +1,166 @@
+
+api:
+  host: "${VORAG_API_HOST:127.0.0.1}"
+  port: 8000
+  api_key: "${VORAG_API_KEY:}"
+  api_keys_json: "${VORAG_API_KEYS_JSON:}"
+  cors_origins:
+    - "http://localhost"
+    - "http://localhost"
+    - "http://localhost:5173"
+  request_timeout_s: 60
+
+portal:
+  public_url: "${VORAG_PORTAL_PUBLIC_URL:http://localhost:3080}"
+  fallback_internal_url: "${VORAG_PORTAL_FALLBACK_INTERNAL_URL:http://127.0.0.1:3080}"
+  access_team_domain: "${CLOUDFLARE_ACCESS_TEAM_DOMAIN:}"
+  access_aud: "${CLOUDFLARE_ACCESS_AUD:}"
+  allowed_emails: ${VORAG_PORTAL_ALLOWED_EMAILS:[]}
+  csrf_secret: "${VORAG_PORTAL_CSRF_SECRET:}"
+  upload_staging_path: "${VORAG_PORTAL_UPLOAD_STAGING_PATH:./var/portal-uploads}"
+  upload_chunk_bytes: ${VORAG_PORTAL_UPLOAD_CHUNK_BYTES:8388608}
+  upload_max_bytes: ${VORAG_PORTAL_UPLOAD_MAX_BYTES:2147483648}
+  upload_stale_hours: ${VORAG_PORTAL_UPLOAD_STALE_HOURS:24}
+
+database:
+  url: "${VORAG_POSTGRES_URL:postgresql://localhost:5434/vorag}"
+  migrations_dir: "src/vo_rag/core/db/migrations"
+  pool_min: 2
+  pool_max: 10
+
+qdrant:
+  url: "${QDRANT_URL:http://127.0.0.1:6400}"
+  prefer_grpc: false
+  api_key: "${QDRANT_API_KEY:}"
+
+garage:
+  endpoint: "${GARAGE_ENDPOINT:http://localhost:3900}"
+  access_key: "${GARAGE_ACCESS_KEY:}"
+  secret_key: "${GARAGE_SECRET_KEY:}"
+  region: "${GARAGE_REGION:garage}"
+  buckets:
+    artifacts: "vorag-artifacts"
+    models: "vorag-models"
+    backups: "vorag-backups"
+
+figures:
+  root: "${VORAG_FIGURES_ROOT:./var/figures}"
+
+embedding:
+  batch_url: "${BGE_M3_BATCH_URL:http://localhost:8501/embed}"
+  query_url: "${BGE_M3_QUERY_URL:http://localhost:8501/embed}"
+  query_serverless_url: "${SERVERLESS_EMBED_QUERY_URL:}"
+  batch_serverless_url: "${SERVERLESS_EMBED_BATCH_URL:}"
+  query_api_key: "${RUNPOD_API_KEY:}"
+  batch_api_key: "${RUNPOD_API_KEY:}"
+  timeout_s: 60
+
+chunking:
+  strategy: "hierarchical"
+  semantic_breakpoint_percentile: 95.0
+  semantic_buffer_size: 1
+
+vlm:
+  enabled: "${VLM_ENABLED:false}"
+  url: "${VLM_URL:http://localhost:8501/vlm}"
+  model: "${VLM_MODEL:Qwen3VL-8B-Instruct-Q8_0.gguf}"
+  describe_concurrency: ${VLM_DESCRIBE_CONCURRENCY:1}
+  max_tokens: ${VLM_MAX_TOKENS:1024}
+  per_image_deadline_s: ${VLM_PER_IMAGE_DEADLINE_S:300}
+  confidence_threshold: ${VLM_CONFIDENCE_THRESHOLD:0.65}
+  primary_max_pixels: ${VLM_PRIMARY_MAX_PIXELS:1048576}
+  retry_max_pixels: ${VLM_RETRY_MAX_PIXELS:1572864}
+
+reranker:
+  url: "${RERANKER_URL:http://localhost:8501/rerank}"
+  backend: "${RERANKER_BACKEND:client}"
+  model_path: "${GTE_RERANKER_PATH:models/gte-reranker-onnx-int8}"
+  intra_threads: 16
+  batch_size: 32
+  depth_low: 20
+  depth_high: 100
+  auto_merge_enabled: false
+  auto_merge_threshold: 0.5
+  timeout_s: 30
+
+triage:
+  local_model_url: "${LOCAL_LLM_URL:http://localhost:8081}"
+  confidence_threshold: 0.7
+  anthropic_api_key: "${ANTHROPIC_API_KEY:}"
+  fallback_model: "claude-haiku-4-5-20251001"
+
+observability:
+  langfuse_host: "${LANGFUSE_HOST:http://localhost:3101}"
+  langfuse_public_key: "${LANGFUSE_PUBLIC_KEY:}"
+  langfuse_secret_key: "${LANGFUSE_SECRET_KEY:}"
+  log_level: "INFO"
+  json_logs: true
+
+otel:
+  enabled: ${VORAG_OTEL_ENABLED:false}
+  endpoint: ${VORAG_OTEL_ENDPOINT:http://127.0.0.1:4318}
+  service_name: ${VORAG_OTEL_SERVICE_NAME:vo-rag}
+  service_namespace: ${VORAG_OTEL_SERVICE_NAMESPACE:vo-rag}
+  deployment_environment: ${VORAG_OTEL_DEPLOYMENT_ENVIRONMENT:dev}
+  role: ${VORAG_OTEL_ROLE:rag}
+  host_name: ${VORAG_OTEL_HOST_NAME:}
+
+compliance:
+  mode: "monitoring"
+  similarity_flag: 0.80
+  similarity_reject: 0.90
+  min_sources: 3
+  max_single_source_contribution: 0.40
+
+answer:
+  enabled: ${ANSWER_ENABLED:false}
+  provider: "anthropic"
+  anthropic_api_key: "${ANTHROPIC_API_KEY:}"
+  quality_model: "claude-sonnet-4-6"
+  fast_model: "claude-haiku-4-5-20251001"
+  audit_model: "claude-opus-4-7"
+  kimi_model: "kimi-k2.6"
+  kimi_api_key: "${MOONSHOT_API_KEY:}"
+  kimi_base_url: "${KIMI_BASE_URL:https://api.moonshot.ai/v1}"
+  allow_hosted: ${ANSWER_ALLOW_HOSTED:false}
+  allow_kimi: ${ANSWER_ALLOW_KIMI:false}
+  allow_local: ${ANSWER_ALLOW_LOCAL:false}
+  local_base_url: "${ANSWER_LOCAL_BASE_URL:http://127.0.0.1:8080}"
+  local_model: "${ANSWER_LOCAL_MODEL:unsloth_Qwen3.6-35B-A3B-GGUF_Qwen3.6-35B-A3B-Q8_0.gguf}"
+  allow_raw_hosted_egress: ${ANSWER_ALLOW_RAW_HOSTED_EGRESS:false}
+  max_context_chunks: 8
+  max_output_tokens: 1200
+  timeout_s: 90
+
+cloud:
+  monthly_budget_usd: 50.0
+  per_job_max_usd: 10.0
+  r2:
+    endpoint: "${R2_ENDPOINT:}"
+    access_key: "${R2_ACCESS_KEY:}"
+    secret_key: "${R2_SECRET_KEY:}"
+    bucket: "${R2_BUCKET_STAGING:vorag-cloud-staging}"
+  tailscale:
+    oauth_client_id: "${TAILSCALE_OAUTH_CLIENT_ID:}"
+    oauth_client_secret: "${TAILSCALE_OAUTH_CLIENT_SECRET:}"
+    tailnet: "${TAILSCALE_TAILNET:}"
+  rates:
+    runpod:
+      RTX4090: 0.39
+      L4: 0.43
+      A10G: 0.50
+      A100_80: 1.29
+    vast:
+      RTX3090: 0.22
+      RTX3090_2x: 0.50
+
+serverless:
+  api_key: "${RUNPOD_API_KEY}"
+  vlm_endpoint_id: "${SERVERLESS_VLM_ENDPOINT_ID}"  # No hardcoded default — must be set in .env; see CLAUDE.md env vars section
+  vlm_model_name: "${SERVERLESS_VLM_MODEL_NAME:qwen3-vl-32b}"
+  text_endpoint_id: "${SERVERLESS_TEXT_ENDPOINT_ID}"
+  text_model_name: "${SERVERLESS_TEXT_MODEL_NAME:qwen3-6-27b}"
+  dsi_endpoint_id: "${SERVERLESS_DSI_ENDPOINT_ID:}"  # DSI role (P2c); required once DSI traffic ramps
+  dsi_model_name: "${SERVERLESS_DSI_MODEL_NAME:qwen3-6-35b-a3b}"
+  exp_endpoint_id: "${SERVERLESS_EXP_ENDPOINT_ID:}"
+  base_url_override: "${SERVERLESS_BASE_URL_OVERRIDE:}"

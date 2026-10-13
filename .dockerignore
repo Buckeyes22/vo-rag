@@ -1,0 +1,10 @@
+.git
+.venv
+node_modules
+packages/portal/dist
+data/
+htmlcov/
+*.tsbuildinfo
+.claude/
+.mypy_cache/
+**/.mypy_cache/

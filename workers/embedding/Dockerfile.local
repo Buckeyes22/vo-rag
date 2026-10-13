@@ -1,0 +1,75 @@
+# syntax=docker/dockerfile:1.7
+# Thin local-dev variant of workers/embedding/Dockerfile.
+#
+# The canonical image already serves local runs at 8090; this variant
+# exists for the case where you want a smaller dev image that does NOT
+# bake the BAAI/bge-m3 model into the layer and instead mounts a host
+# cache. Override BGE_M3_MODEL_PATH at runtime to point at the bind mount.
+#
+# Build:  docker build -f workers/embedding/Dockerfile.local \
+#             --build-arg BGE_M3_MODEL_PATH=/models/bge-m3 -t vo-rag-bge-m3:local .
+# Run:    docker run --rm --gpus all -p 8090:8090 \
+#             -v /host/cache/bge-m3:/models/bge-m3:ro \
+#             -e BGE_M3_MODEL_PATH=/models/bge-m3 \
+#             -e BGE_M3_DEVICE=cuda:0 \
+#             vo-rag-bge-m3:local
+#
+# For RunPod batch, use the canonical Dockerfile and set PORT to 80 in
+# the worker-vllm template — no image rebuild required.
+ARG CUDA_VERSION=12.4.1
+ARG PYTHON_VERSION=3.12
+ARG BGE_M3_MODEL_PATH=/app/model-cache
+
+FROM nvidia/cuda:${CUDA_VERSION}-cudnn-runtime-ubuntu22.04
+
+ARG PYTHON_VERSION
+ARG BGE_M3_MODEL_PATH
+LABEL org.opencontainers.image.title="vo-rag-bge-m3-local" \
+      org.opencontainers.image.description="Local BGE-M3 dev variant — model NOT baked; mount host cache via BGE_M3_MODEL_PATH"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/app/model-cache \
+    TRANSFORMERS_CACHE=/app/model-cache \
+    BGE_M3_MODEL_PATH=${BGE_M3_MODEL_PATH} \
+    BGE_M3_DEVICE=cuda:0 \
+    VORAG_LOG_LEVEL=INFO \
+    VORAG_JSON_LOGS=1 \
+    PORT=8090
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python3-pip \
+        git curl ca-certificates \
+    && ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python \
+    && ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+
+RUN pip install --index-url https://download.pytorch.org/whl/cu124 \
+        torch==2.6.0 \
+    && pip install --no-cache-dir --no-deps -e . \
+    && pip install --no-cache-dir \
+        "FlagEmbedding>=1.3,<2" \
+        "transformers>=4.44,<5" \
+        "huggingface-hub>=0.24,<1" \
+        "fastapi>=0.115,<1" \
+        "uvicorn[standard]>=0.30,<1" \
+        "pydantic>=2.7,<3" \
+        "pydantic-settings>=2.5" \
+        "pyyaml>=6.0" \
+        "httpx>=0.27,<1" \
+        "structlog>=25.5.0" \
+        "prometheus-client>=0.25,<1"
+
+COPY workers/embedding/entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh \
+    && chmod +x /entrypoint.sh
+
+EXPOSE 8090
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,0 +1,10 @@
+vo-rag
+Copyright 2026 LateApex LLC
+
+This product includes software developed at LateApex LLC.
+
+The bundled SCOWL word list retains its own copyright and license notice in
+src/vo_rag/pipelines/book_rag/data/SCOWL-COPYRIGHT.txt. vo-rag is not
+affiliated with, endorsed by, or sponsored by any upstream model, dataset, or
+service vendor; all third-party names and marks remain the property of their
+respective owners.

@@ -1,0 +1,1 @@
+{"id":"replace-with-corpus-figure-001","image":"images/figure-001.png","prompt":"Describe the figure for retrieval, preserving visible labels and relationships.","expected_page_kinds":["diagram","mixed"],"required_terms":["replace with an exact visible label"],"forbidden_terms":["replace with a plausible but absent claim"]}

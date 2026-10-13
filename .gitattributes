@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.onnx binary
+*.safetensors binary
+*.gguf binary
+*.parquet binary
+*.sqlite binary
+uv.lock linguist-generated=true

@@ -1,0 +1,30 @@
+{
+  "workload": "text-gen",
+  "serverless_role": "text",
+  "model_name_env": "${SERVERLESS_TEXT_MODEL_NAME:qwen3-6-27b}",
+  "endpoint_id_env": "${SERVERLESS_TEXT_ENDPOINT_ID}",
+  "image": "runpod/worker-vllm:1.0.0",
+  "image_notes": "Use the official runpod/worker-vllm hub (a.k.a. worker-vllm), not the bare vllm/vllm-openai image. worker-vllm is the queue-handler hub that wraps vLLM with RunPod's /run and /status endpoints; vllm-openai is a much older base image that lacks the serverless worker contract.",
+  "base_url_shape": "https://api.runpod.ai/v2/{endpoint_id}/openai/v1",
+  "scaling": {
+    "min_workers": 0,
+    "max_workers": 3,
+    "idle_timeout_s": 60,
+    "max_concurrency": 16
+  },
+  "gpu": {
+    "type": "NVIDIA GeForce RTX 4090",
+    "count": 1,
+    "vram_gb_min": 24
+  },
+  "env": {
+    "MODEL_NAME": "${SERVERLESS_TEXT_MODEL_NAME:qwen3-6-27b}",
+    "MAX_MODEL_LEN": "8192",
+    "GPU_MEMORY_UTILIZATION": "0.92",
+    "ENABLE_PREFIX_CACHING": "true"
+  },
+  "health_check": "python -c 'import urllib.request,json; r=urllib.request.urlopen(\"http://localhost:8000/v1/models\"); print(json.loads(r.read())[\"data\"][0][\"id\"])'",
+  "deploy_phase_notes": "runpodctl serverless create / update and the real endpoint_id, image digest, FlashBoot toggle, and Grafana dashboard wiring are DEPLOY-PHASE operations and are NOT committed here. The endpoint_id_env placeholder above must be set per environment (staging, prod) by the deploy pipeline.",
+  "owner": "vo-rag/core",
+  "version": "1.0.0"
+}

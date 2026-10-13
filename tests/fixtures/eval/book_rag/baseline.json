@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "pipeline": "book_rag",
+  "qrels_hash": "439dd73d6363c5e824cba8509d0bdfa7c98b281982fb031ae6bbf37cd048bc59",
+  "corpus_snapshot": "sha256:5213fa3c1b7e1748713efa379a367f966f47dec70874a5beb1f3c2aa2150eddc",
+  "created_at": "2026-10-12T00:00:00Z",
+  "aggregate": {
+    "ndcg@5": 0.0,
+    "recall@5": 0.0,
+    "mrr": 0.0,
+    "ndcg@10": 0.0,
+    "recall@10": 0.0
+  }
+}

@@ -1,0 +1,228 @@
+[project]
+name = "vo-rag"
+version = "0.1.0"
+description = "Clean-slate multi-domain RAG system"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.12"]
+dependencies = [
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.5,<3",
+    "pyyaml>=6.0,<7",
+    "numpy>=2.0,<3",
+    "scikit-learn>=1.5,<2",
+    "umap-learn>=0.5,<1",
+    "click>=8.1,<9",
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "python-ulid>=3,<4",
+    "prometheus-client>=0.25.0",
+    "structlog>=25.5.0",
+    "asyncpg>=0.31.0",
+    "tenacity>=9.0,<10",
+    "anthropic>=0.40,<1",
+    "httpx>=0.27,<1",
+    "httpcore>=1.0,<2",
+    "jinja2>=3.1,<4",
+    "MarkupSafe>=3,<4",
+    "qdrant-client>=1.11,<2",
+    "aioboto3>=13,<14",
+    "botocore>=1.36.0,<1.36.2",
+    "xxhash>=3.5,<4",
+    "diskcache>=5.6,<6",
+    "pymupdf>=1.27.2.3",
+    "transformers>=4.44,<5",
+    "beautifulsoup4>=4.12,<5",
+    "onnxruntime>=1.18,<2",
+    "pyjwt[crypto]>=2.10,<3",
+    "mcp>=1.12,<2",
+    "sse-starlette>=3,<4",
+    "rich>=13,<15",
+    "opentelemetry-sdk>=1.42.1",
+    "opentelemetry-exporter-otlp-proto-http>=1.42.1",
+    "opentelemetry-instrumentation-fastapi>=0.63b1",
+    "opentelemetry-instrumentation-httpx>=0.63b1",
+]
+
+[project.optional-dependencies]
+dev = [
+    # The OCR farm coordinator merges split books with docling-core (lazily
+    # imported; the runtime extra brings it on localhost). Pinned to the
+    # locked version so CI runs the real merge test (VOR-1427).
+    "docling-core==2.78.0",
+    "pytest>=8.3,<9",
+    "pytest-asyncio>=0.24,<1",
+    "pytest-cov>=5,<7",
+    "pytest-randomly>=3.15,<4",
+    "pytest-benchmark>=4,<6",
+    "httpx>=0.27,<1",
+    "respx>=0.21,<1",
+    "hypothesis>=6.100,<7",
+    "schemathesis>=3.30,<4",
+    "coverage>=7.5,<8",
+    "ruff>=0.6,<1",
+    "mypy>=1.11,<2",
+    "bandit>=1.7,<2",
+    "pip-audit>=2.7,<3",
+    "detect-secrets>=1.5,<2",
+    "mutmut>=2.5,<3",
+    "locust>=2.29,<3",
+]
+# Heavy runtime deps for actually RUNNING the pipeline (parse/embed/PII) on a
+# GPU host. Kept out of core deps so unit CI stays light; install on the box
+# with `uv sync --extra runtime`. Versions are pinned to a tested set.
+runtime = [
+    "docling>=2.70,<3",
+    "FlagEmbedding>=1.3,<2",
+    "torch>=2.4,<3",
+    "pypandoc>=1.13,<2",
+    "ebooklib>=0.18,<1",
+    "python-magic>=0.4.27,<1",
+    "presidio-analyzer>=2.2,<3",
+]
+# Optional LlamaIndex interop tier. Mirrors the `runtime` extra philosophy:
+# kept out of core deps so unit CI and non-adapter worker images stay light.
+# Install on a box that exercises the adapters with `uv sync --extra llamaindex`.
+# `require_llamaindex()` guards adapter imports when this extra is absent.
+# The CI matrix keeps a light default job plus a `--extra llamaindex` adapter job.
+llamaindex = [
+    "llama-index-core>=0.12.30,<0.13.0",
+    "llama-index-instrumentation>=0.5,<0.6",
+    "llama-index-workflows>=1.3.0,<2.0.0",
+]
+
+[project.scripts]
+vo-rag = "vo_rag.cli.main:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vo_rag"]
+
+[tool.vo_rag]
+pipelines = [
+    { name = "book_rag",          status = "active",  summary = "Book/document ingestion + retrieval (first to production)" },
+    { name = "code_rag",          status = "planned", summary = "Code-aware retrieval over repositories" },
+    { name = "research_agent",    status = "planned", summary = "Multi-step research with web fallback" },
+    { name = "idea_capture",      status = "planned", summary = "Idea intake + structuring" },
+    { name = "article_extraction",status = "planned", summary = "Article fetch + structured extraction" },
+    { name = "structured_scrape", status = "planned", summary = "Schema-driven scraping to structured records" },
+    { name = "url_snapshot",      status = "planned", summary = "URL capture + snapshotting" },
+    { name = "repo_analysis",     status = "planned", summary = "Repository analysis + dependency mapping" },
+    { name = "tool_evaluation",   status = "planned", summary = "Tool/library evaluation pipeline" },
+    { name = "vce",               status = "planned", summary = "Video coaching extraction" },
+]
+
+# Worker roster: the single source of truth for deployable worker surfaces
+# Each entry maps to one row in `vo_rag.workers.registry`. Workloads
+# are validated against `vo_rag.core.cloud.router.workload_location()` — with
+# the exception of `misc`, which is exporter/accounting-only and never runs
+# real compute. See tests/workers/test_registry.py for the contract.
+workers = [
+    { name = "embedding",          workload = "embedding",      location = "local",             entrypoint = "vo_rag.workers.embedding.server:app",            deploy_artifacts = ["workers/embedding/Dockerfile", "workers/embedding/Dockerfile.local"], gpu_required = true,  test_level = "unit+gpu-integration", status = "active" },
+    { name = "runpod_text_gen",    workload = "text-gen",       location = "runpod_serverless", entrypoint = "worker-vllm hub",                               deploy_artifacts = ["workers/runpod_vllm/templates/text-gen.json"],   gpu_required = true,  test_level = "contract+live",       status = "active" },
+    { name = "runpod_vlm",         workload = "vlm",            location = "runpod_serverless", entrypoint = "worker-vllm hub",                               deploy_artifacts = ["workers/runpod_vllm/templates/vlm.json"],         gpu_required = true,  test_level = "contract+live",       status = "active" },
+    { name = "runpod_dsi",         workload = "dsi",            location = "runpod_serverless", entrypoint = "worker-vllm hub",                               deploy_artifacts = ["workers/runpod_vllm/templates/dsi.json"],         gpu_required = true,  test_level = "contract+live",       status = "active" },
+    { name = "cloud_cost_exporter",workload = "misc",           location = "local",             entrypoint = "services.cloud_cost_exporter.app:app",          deploy_artifacts = ["services/cloud_cost_exporter/Dockerfile"],      gpu_required = false, test_level = "unit+db-integration",  status = "active" },
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+mypy_path = "src"
+
+# Tests stay type-checked but don't require full annotations (standard practice;
+# src remains fully strict). Keeps test code readable without untyped-def noise.
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+
+# Pillow is a runtime-only dependency (pulled via the `runtime` extra through
+# docling); the lint env doesn't install it. The image-eligibility pixel-hash
+# helpers lazy-import PIL, so let mypy proceed without its stubs.
+[[tool.mypy.overrides]]
+module = "PIL.*"
+ignore_missing_imports = true
+
+# docling-core is in the dev extra only so CI runs the OCR farm's real merge
+# test (VOR-1427). mypy keeps seeing it as it did while it was absent (Any):
+# the parse and worker code import from docling_core.types.doc, whose
+# re-exports aren't explicit, and those modules are typed against Any.
+[[tool.mypy.overrides]]
+module = ["docling_core", "docling_core.*"]
+follow_imports = "skip"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["src", "."]
+addopts = "-ra --strict-markers --import-mode=importlib"
+markers = [
+    "integration: needs live infra (Qdrant/Postgres via docker-compose.testinfra.yml)",
+    "slow: long-running",
+    "live: hits real external services (skipped unless --run-live / VORAG_RUN_LIVE)",
+    "property: hypothesis property-based",
+    "security: security/abuse guards (auth, SSRF, injection, non-disclosure)",
+    "release: release-gate checks (run only with -m release)",
+    "perf: pytest-benchmark micro-benchmarks",
+]
+
+[tool.coverage.run]
+source = ["src/vo_rag"]
+branch = true
+# Query helpers are 1:1 SQL adapters — they only execute against a live
+# Postgres and are covered by the integration suite under
+# `tests/core/db/test_postgres_integration.py`. Excluding here keeps
+# `fail_under` honest (unit-test coverage of pure-Python helpers) without
+# leaving the SQL uncovered.
+omit = [
+    "src/vo_rag/core/db/queries/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 60
+
+[tool.hypothesis]
+
+[tool.bandit]
+exclude_dirs = [
+    "tests",
+    ".venv",
+    "db",
+    "docker",
+    "scripts",
+    "data",
+]
+# B404 / B603: subprocess is used in one contained integration, shelling
+# out to a local binary resolved from PATH (Calibre's `ebook-convert`):
+# the MOBI -> EPUB conversion path (parsers/epub.py: _convert_mobi_to_epub,
+# VORAG_MOBI_CONVERTER override, 900s timeout). It uses
+# shell=False with a static argv list (no interpolation of untrusted input).
+# Reviewed as a contained integration, not a generic shell sink.
+# B105: GateDecision.PASS is an enum label ("pass"), not a password.
+# B311: random.Random is used for reproducible chunk sampling (seeded,
+# deterministic), not for cryptography or security purposes.
+skips = ["B404", "B603", "B105", "B311"]
+
+[dependency-groups]
+dev = [
+    "types-pyyaml>=6.0.12.20260518",
+]
+
+# [tool.mutmut]
+# paths_to_mutate = "src/vo_rag/core/"

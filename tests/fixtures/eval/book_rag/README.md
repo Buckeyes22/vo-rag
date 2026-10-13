@@ -1,0 +1,1 @@
+Synthetic two-document corpus with queries, relevance judgments and baseline files for exercising the evaluation tooling (`make eval-demo`). Baseline floors are zero; generate your own baseline against a real corpus before using a quality gate.

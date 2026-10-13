@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Lint, type-check, test, SAST, secrets, docs, eval gate
+        run: bash scripts/ci.sh
+
+  portal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm -r test
+      - run: pnpm -r build
+
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Render every Mermaid diagram
+        run: |
+          set -euo pipefail
+          puppeteer_config="$(mktemp)"
+          echo '{"args":["--no-sandbox"]}' > "$puppeteer_config"
+          status=0
+          for file in README.md docs/*.md; do
+            grep -q '^```mermaid' "$file" || continue
+            out="/tmp/out-$(echo "${file%.md}" | tr '/' '-').md"
+            echo "== $file"
+            if ! npx -y @mermaid-js/mermaid-cli@12 -p "$puppeteer_config" -i "$file" -o "$out"; then
+              echo "::error file=$file::Mermaid render failed"
+              status=1
+            fi
+          done
+          exit "$status"

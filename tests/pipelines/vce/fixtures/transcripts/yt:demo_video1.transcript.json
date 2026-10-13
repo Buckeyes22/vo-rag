@@ -1,0 +1,11 @@
+{
+  "video_id": "yt:demo_video1",
+  "language": "en",
+  "segments": [
+    {"start": 1150.0, "end": 1158.0, "text": "Alright let's look at this corner entry in detail."},
+    {"start": 1158.0, "end": 1172.0, "text": "See how late he turns in here, the apex is much later than the reference lap."},
+    {"start": 1172.0, "end": 1190.0, "text": "And the throttle application is progressive from there."},
+    {"start": 1390.0, "end": 1402.0, "text": "Notice the indecision here — brake release brake release again."},
+    {"start": 1402.0, "end": 1422.0, "text": "Right here finally commits to the apex, but the line is compromised."}
+  ]
+}

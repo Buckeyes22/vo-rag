@@ -1,0 +1,59 @@
+[
+  {
+    "id": "DDDDDDDDDDDDDDDDDDDDDDDD",
+    "video_id": "yt:demo_video1",
+    "start_ts": "1154.433",
+    "end_ts": "1170.383",
+    "observation": "the subject reached the second marker later and held a steady rate",
+    "evidence": "explicit_numeric",
+    "imputed_dims": "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]",
+    "anchors": [
+      {
+        "region": "{\"height\":10,\"width\":10,\"x\":450,\"y\":250}",
+        "frame_path": null,
+        "vlm_description": "Chart overlay visible showing a value/time graph",
+        "frame_ts_seconds": 1160.433
+      }
+    ]
+  },
+  {
+    "id": "EEEEEEEEEEEEEEEEEEEEEEEE",
+    "video_id": "yt:demo_video1",
+    "start_ts": "1391.358",
+    "end_ts": "1419.762",
+    "observation": "hesitation at the start of the step with repeated pauses",
+    "evidence": "explicit_qualitative",
+    "imputed_dims": "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]",
+    "anchors": []
+  },
+  {
+    "id": "FFFFFFFFFFFFFFFFFFFFFFFF",
+    "video_id": "yt:demo_video2",
+    "start_ts": "60.000",
+    "end_ts": "75.000",
+    "observation": "subject under-rotates the part at the end of the step",
+    "evidence": "inferred_from_audio",
+    "imputed_dims": "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]",
+    "anchors": []
+  },
+  {
+    "id": "AAAAAAAAAAAAAAAAAAAAAAAA",
+    "video_id": "yt:demo_video2",
+    "start_ts": "1155.000",
+    "end_ts": "1171.000",
+    "observation": "shifted interval test fixture (superseded scenario)",
+    "evidence": "explicit_numeric",
+    "imputed_dims": "[]",
+    "anchors": []
+  },
+  {
+    "id": "BBBBBBBBBBBBBBBBBBBBBBBB",
+    "video_id": "yt:abc",
+    "start_ts": "10.000",
+    "end_ts": "20.000",
+    "observation": "test row used to verify record_id_for_interval",
+    "evidence": "inferred_from_audio",
+    "imputed_dims": "[]",
+    "anchors": []
+  }
+]

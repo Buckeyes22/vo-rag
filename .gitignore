@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.benchmarks/
+mutants/
+.coverage
+coverage.xml
+htmlcov/
+# Node
+node_modules/
+packages/*/dist/
+# Local data / caches
+*-data/
+data/eval/runs/*
+!data/eval/runs/.gitkeep
+# Secrets / env
+.env
+.env.*
+!.env.example
+# OS / editor
+*:Zone.Identifier
+.DS_Store
+tests/fixtures/eval/book_rag/source_export.jsonl
+*.tsbuildinfo
+data/audit/*.json
+
+# Local runtime output
+var/
+artifacts/
+outputs/
+*.log
+*.sqlite*
+*.db
+

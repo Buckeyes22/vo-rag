@@ -1,0 +1,2 @@
+{"chunk_id": "demo-d1", "source_id": "demo-source1", "text": "The sample library stores passages in a vector index with document metadata.", "page_number": 1, "page_range": [1, 1]}
+{"chunk_id": "demo-d2", "source_id": "demo-source2", "text": "The sample archive caches document embeddings to avoid duplicate compute.", "page_number": 1, "page_range": [1, 1]}

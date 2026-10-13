@@ -1,0 +1,15 @@
+{
+  "cli_leaves": 53,
+  "mcp_tools": 4,
+  "portal_count_method": "vitest list",
+  "portal_test_files": 16,
+  "portal_tests": 76,
+  "postgres_tables": 47,
+  "pytest_command": "uv run --extra dev --extra llamaindex pytest --collect-only -p no:cacheprovider -q -m 'not integration and not slow and not live'",
+  "pytest_count_method": "makefile",
+  "pytest_selection": "not integration and not slow and not live",
+  "pytest_test_files": 417,
+  "pytest_tests": 5048,
+  "qdrant_collections": 19,
+  "routes": 28
+}
